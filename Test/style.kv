@@ -1,0 +1,406 @@
+# https://stackoverflow.com/questions/65698145/kivymd-tab-name-containing-icons-and-text
+# this import will prevent disappear tabs through some clicks on them)))
+#: import md_icons kivymd.icon_definitions.md_icons
+#: import fonts kivymd.font_definitions.fonts
+
+WindowManager:
+    id: wm
+    main: main
+    LoginScreen:
+        name: 'login'
+    MainScreen:
+        name: 'main'
+        id: main
+    BigTableScreen:
+        name: 'lastTable'
+        id: lastTable
+
+
+<LoginScreen>:
+
+    login: username
+    password: password
+
+    Screen:
+        MDCard:
+            size_hint: None, None
+            size: 300, 400
+            pos_hint: {"center_x": 0.5 , "center_y": 0.5}
+            elevation: 10
+            padding: 25
+            spacing: 25
+            orientation: 'vertical'
+
+            MDLabel:
+                id: login_label
+                text: 'Вход'
+                font_size: 40
+                halign: 'center'
+                size_hint_y: None
+                height: self.texture_size[1]
+                padding_y: 15
+
+            MDTextFieldRound:
+                id: username
+                hint_text: 'Имя пользователя'
+                icon_right: 'account'
+                size_hint_x: None
+                width: 200
+                font_size: 16
+                pos_hint: {"center_x": 0.5}
+
+            MDTextFieldRound:
+                id: password
+                hint_text: 'Пароль'
+                icon_right: 'eye-off'
+                size_hint_x: None
+                width: 200
+                font_size: 16
+                pos_hint: {"center_x": 0.5}
+                password: True
+
+            MDRoundFlatButton:
+                text: 'Войти'
+                font_size: 12
+                pos_hint:{"center_x": 0.5}
+                on_release:
+                    if  app._data[0] == root.login.text and app._data[1] == root.password.text: app.root.current = 'main'
+                    else: root.show_access_dialog()
+
+            Widget:
+                size_hint_y: None
+                height: 45
+
+
+<MainScreen>:
+    inicials: inicials
+    adress: adress
+    status: status
+    service: services
+
+    Screen:
+
+        MDNavigationLayout:
+
+            ScreenManager:
+
+                Screen:
+
+                    MDBoxLayout:
+
+                        orientation: 'vertical'
+
+                        MDTabs:
+                            id: tabs
+                            on_tab_switch: app.on_tab_switch(*args)
+                            height: '48dp'
+                            tab_indicator_anim: False
+                            background_color: 0.1, 0.1, 0.1, 1
+
+                            Tab:
+                                id: add_client
+                                name: 'add_client'
+                                text: f"[ref={'Добавление Клиента'}][font={fonts[-1]['fn_regular']}]{md_icons['account-multiple-plus']}[/font][/ref] {'Добавление Клиента'}"
+
+                                BoxLayout:
+                                    orientation: 'vertical'
+                                    padding: '10dp'
+
+                                    BoxLayout:
+                                        orientation: 'horizontal'
+
+                                        MDIconButton:
+                                            icon: 'account'
+
+                                        MDTextField:
+                                            id: inicials
+                                            hint_text: 'Инициалы'
+
+                                    BoxLayout:
+                                        orientation: 'horizontal'
+
+                                        MDIconButton:
+                                            icon: 'adjust'
+
+                                        MDTextField:
+                                            id: status
+                                            hint_text: 'Статус'
+                                            on_focus: if self.focus : app.menu_status.open()
+
+                                    BoxLayout:
+                                        orientation: 'horizontal'
+
+                                        MDIconButton:
+                                            icon: 'format-list-checkbox'
+
+                                        MDTextField:
+                                            id: services
+                                            hint_text: 'Услуга'
+                                            on_focus: if self.focus : app.menu_service.open()
+
+                                    BoxLayout:
+                                        orientation: 'horizontal'
+
+                                        MDIconButton:
+                                            icon: 'tram'
+
+                                        MDTextField:
+                                            id: adress
+                                            hint_text: 'Адрес'
+
+                                    BoxLayout:
+
+                                        orientation:'horizontal'
+                                        padding: '10dp'
+
+                                        MDRoundFlatIconButton:
+                                            icon: "account-multiple-plus"
+                                            text: "Добавить Клиента"
+                                            on_release: app.connector.AddClients(root.inicials.text, root.status.text, root.service.text, root.adress.text)
+
+                                        MDRoundFlatIconButton:
+                                            icon: "lock-reset"
+                                            text: "Обновить таблицу"
+                                            on_release: app.ResetTable()
+
+                                        MDRoundFlatIconButton:
+                                            icon: "circle-edit-outline"
+                                            text: "Создать диаграмму"
+                                            on_release: root.draw_ellipse(root.ids.graph)
+
+                                        MDRoundFlatIconButton:
+                                            icon: "circle-edit-outline"
+                                            text: "Обновить диаграмму"
+                                            on_release: root.update_ellipse(root.ids.graph)
+                            Tab:
+                                id: table_client
+                                name: 'table_client'
+                                text: f"[ref={'Таблица Клиентов'}][font={fonts[-1]['fn_regular']}]{md_icons['table-account']}[/font][/ref] {'Таблица Клиентов'}"
+
+                                BoxLayout:
+                                    orientation: 'vertical'
+
+                                    GridLayout:
+                                        cols: 4
+                                        padding: '65dp'
+                                        spacing: '30dp'
+                                        size_hint_y: 0.3
+
+                                        GridLayout:
+                                            cols:2
+                                            MDLabel:
+                                                text: 'Инициалы'
+                                            CheckBox:
+                                                id: search
+                                                on_active: app.checkbox_click(self, self.active, 'Инициалы')
+
+                                        GridLayout:
+                                            cols:2
+                                            MDLabel:
+                                                text: 'Статус'
+                                            CheckBox:
+                                                on_active: app.checkbox_click(self, self.active, 'Статус')
+
+                                        GridLayout:
+                                            cols:2
+                                            MDLabel:
+                                                text: 'Услуга'
+                                            CheckBox:
+                                                on_active: app.checkbox_click(self, self.active, 'Услуга')
+
+                                        GridLayout:
+                                            cols:2
+                                            MDLabel:
+                                                text: 'Адрес'
+                                            CheckBox:
+                                                on_active: app.checkbox_click(self, self.active, 'Адрес')
+
+                                    GridLayout:
+                                        cols: 5
+                                        padding: '65dp'
+                                        spacing: '30dp'
+                                        size_hint_y: 0.33
+
+                                        MDTextFieldRound:
+                                            id: searchingtext_inicials
+                                            hint_text: 'Инициалы'
+                                            icon_right: 'magnify'
+                                            width: 100
+                                            font_size: 16
+
+                                        MDTextFieldRound:
+                                            id: searchingtext_status
+                                            hint_text: 'Статус'
+                                            icon_right: 'magnify'
+                                            width: 100
+                                            font_size: 16
+
+                                        MDTextFieldRound:
+                                            id: searchingtext_service
+                                            hint_text: 'Услуга'
+                                            icon_right: 'magnify'
+                                            width: 100
+                                            font_size: 16
+
+                                        MDTextFieldRound:
+                                            id: searchingtext_adress
+                                            hint_text: 'Адрес'
+                                            icon_right: 'magnify'
+                                            width: 100
+                                            font_size: 16
+
+                                        MDRoundFlatIconButton:
+                                            icon: "magnify"
+                                            text: "Поиск"
+                                            on_release: app.search(app.searchingItems, root.ids.searchingtext_inicials.text, root.ids.searchingtext_status.text, root.ids.searchingtext_service.text, root.ids.searchingtext_adress.text)
+
+
+                                    BoxLayout:
+                                        orientation: 'vertical'
+                                        padding: '10dp'
+                                        size_hint_y: 1
+
+                                        ScrollView:
+
+                                            MDList:
+                                                id: table_list
+
+                            Tab:
+                                id: analytics
+                                name: 'analytics'
+                                text: f"[ref={'Статистика'}][font={fonts[-1]['fn_regular']}]{md_icons['google-analytics']}[/font][/ref] {'Статистика'}"
+
+                                BoxLayout:
+                                    orientation: 'vertical'
+                                    padding: '10dp'
+
+
+                                    BoxLayout:
+                                        orientation: 'vertical'
+                                        padding: '10dp'
+                                        size_hint_x: 1
+                                        size_hint_y: None
+                                        height: 50
+
+                                        canvas:
+                                            Color:
+                                                rgba: 0.2, 0.2, 0.2, 0.1
+                                            Rectangle:
+                                                size: self.size
+                                                pos: self.pos
+
+                                        MDLabel:
+                                            text: 'Круговая диаграмма статусов клиентов'
+                                            halign: 'center'
+                                            font_style: 'H5'
+                                            height: '48dp'
+
+                                    BoxLayout:
+                                        orientation: 'vertical'
+                                        padding: '10dp'
+                                        size_hint: 1,1
+                                        id: graph
+
+
+                                    BoxLayout:
+                                        orientation: 'horizontal'
+                                        padding: '10dp'
+                                        size_hint_x: 1
+                                        size_hint_y: None
+                                        height: 50
+
+
+
+
+                            Tab:
+                                id: createWord
+                                name: 'create word'
+                                text: f"[ref={'Создание договора'}][font={fonts[-1]['fn_regular']}]{md_icons['file-outline']}[/font][/ref] {'Создание договора '}"
+
+                                BoxLayout:
+                                    orientation: 'vertical'
+                                    padding: '10dp'
+
+                                    BoxLayout:
+                                        orientation: 'horizontal'
+
+                                        MDIconButton:
+                                            icon: 'account'
+
+                                        MDTextField:
+                                            id: clients_id
+                                            hint_text: 'Введите ID клиента'
+
+                                    BoxLayout:
+                                        orientation: 'horizontal'
+
+                                        MDIconButton:
+                                            icon: 'rename-box'
+
+                                        MDTextField:
+                                            id: nameoffile
+                                            hint_text: 'Введите имя файла'
+
+                                    BoxLayout:
+                                        orientation: 'horizontal'
+
+                                        MDIconButton:
+                                            icon: 'format-list-checkbox'
+
+                                        MDTextField:
+                                            id: path
+                                            hint_text: 'Введите путь к файлу'
+
+                                    BoxLayout:
+
+                                        orientation:'horizontal'
+                                        padding: '10dp'
+
+                                        MDRoundFlatIconButton:
+                                            icon: "download"
+                                            text: "Создать договор"
+                                            on_release: root.Create_Word(root.ids.clients_id.text, root.ids.nameoffile.text, root.ids.path.text)
+
+
+<ItemTable>:
+    size_hint_y: None
+    height: '42dp'
+
+    canvas:
+        Color:
+            rgba: root.color
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+    MDLabel:
+        text: root.id
+        halign: 'center'
+
+    MDLabel:
+        text: root.inicials
+        halign: 'center'
+
+    MDLabel:
+        text: root.status
+        halign: 'center'
+
+    MDLabel:
+        text: root.service
+        halign: 'center'
+
+    MDLabel:
+        text: root.adress
+        halign: 'center'
+
+
+<BigTableScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: '10dp'
+        size_hint_y: 1
+
+        ScrollView:
+
+            MDList:
+                id: bigTableList
